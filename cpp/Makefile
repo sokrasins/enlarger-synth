@@ -1,10 +1,13 @@
 CC=g++
 CFLAGS=-c -Wall
 
-all: synth 
+all: main 
 
-synth: synth.o
-	$(CC) synth.o -lrtaudio -o synth
+main: synth.o main.o
+	$(CC) synth.o main.o -lrtaudio -o synth 
+
+main.o: main.cpp 
+	$(CC) $(CFLAGS) main.cpp
 
 synth.o: synth.cpp
 	$(CC) $(CFLAGS) synth.cpp -lrtaudio
