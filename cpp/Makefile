@@ -13,5 +13,5 @@ synth.o: synth.cpp
 	$(CC) $(CFLAGS) synth.cpp -lrtaudio
 
 clean: 
-	rm *o synth
+	rm -f *o synth
 

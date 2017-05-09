@@ -21,22 +21,24 @@ class Synth {
     ~Synth();
     void start();
     void setAudio( double freq, unsigned int waveForm );
+    static sample sineWave( double loc, unsigned int period );
+    static sample sawWave( double loc, unsigned int period );
+    static sample squareWave( double loc, unsigned int period );
+    static int sampFreq();
+    // int callback( void *outputBuffer, void * /*inputBuffer*/, unsigned int nBufferFrames,
+    //               double /*streamTime*/, RtAudioStreamStatus status, void *data );
 
   private:
 
     // Class fields
-    static const unsigned int channels = 2;            // Number of audio channels
+    // static const unsigned int channels = 2;            // Number of audio channels
+    unsigned int channels;
     static const int fs = 44100;                           // Audio buffer samples per sec 
     RtAudio dac;                      // Audio interface
     double *data;                     // Audio parameters go here
 
     // Class methods
-    void errorCallback( RtAudioError::Type type, const std::string & errorText );
-    sample sineWave( double loc, unsigned int period );
-    sample sawWave( double loc, unsigned int period );
-    sample squareWave( double loc, unsigned int period );
-    int callback( void *outputBuffer, void * /*inputBuffer*/, unsigned int nBufferFrames,
-                  double /*streamTime*/, RtAudioStreamStatus status, void *data );
+    // void errorCallback( RtAudioError::Type type, const std::string & errorText );
     int cleanup();
 };
 

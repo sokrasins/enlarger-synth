@@ -5,8 +5,40 @@
 #include "inc/RtAudio.h"              // All audio stuff
 #include "synth.h"
 
+static int callback( void *outputBuffer, void * /*inputBuffer*/, unsigned int nBufferFrames, 
+                      double /*streamTime*/, RtAudioStreamStatus status, void *data) {
+
+  unsigned int i, j, period, channels = 2;
+  sample *buffer = (sample *) outputBuffer;
+  double *waveParams = (double *) data;
+
+  if ( status ) {
+    std::cout << "Stream underflow detected!" << std::endl;
+  }
+
+  // For all audio channels
+  for ( j=0; j<channels; j++ ) {
+    period = (unsigned int) ( 1.0/waveParams[channels+j] * Synth::sampFreq() );
+
+    // For every expected frame
+    for ( i=0; i<nBufferFrames; i++ ) {
+      if (waveParams[4] == 0) {
+        *buffer++ = Synth::sineWave(waveParams[j], period);
+      } else if (waveParams[4] == 1) {
+        *buffer++ = Synth::sawWave(waveParams[j], period);
+      } else {
+        *buffer++ = Synth::squareWave(waveParams[j], period);
+      }
+
+      waveParams[j] = (double) ( ( (unsigned int) waveParams[j] + 1) % period );
+    }
+  } 
+
+  return 0;
+}
+
 // TODO: What do I do with this error callback? Figure out how its used.
-void Synth::errorCallback( RtAudioError::Type type, const std::string &errorText ) {
+static void errorCallback( RtAudioError::Type type, const std::string &errorText ) {
  
   // This example error handling function does exactly the same thing
   // as the embedded RtAudio::error() function.
@@ -34,46 +66,12 @@ sample Synth::sawWave( double loc, unsigned int period ) {
   return (sample) ( ( ( 2.0 * loc / (double) period ) - 1.0 ) * SCALE );
 }
 
-// Callback, generates a sine wave on each channel
-int Synth::callback( void *outputBuffer, void * /*inputBuffer*/, unsigned int nBufferFrames, 
-          double /*streamTime*/, RtAudioStreamStatus status, void *data ) {
-
-  unsigned int i, j, period;
-  sample *buffer = (sample *) outputBuffer;
-  double *waveParams = (double *) data;
-
-  if ( status ) {
-    std::cout << "Stream underflow detected!" << std::endl;
-  }
-
-  std::cout << "channels: " << this->channels << "\n";
-
-  // For all audio channels
-  for ( j=0; j<this->channels; j++ ) {
-    period = 220; //(unsigned int) ( 1.0/waveParams[this->channels+j] * this->fs );
-    std::cout << "period: " << period << std::endl;
-    // For every expected frame
-    for ( i=0; i<nBufferFrames; i++ ) {
-      if (waveParams[4] == 0) {
-        *buffer++ = Synth::sineWave(waveParams[j], period);
-      } else if (waveParams[4] == 1) {
-        *buffer++ = Synth::sawWave(waveParams[j], period);
-      } else {
-        *buffer++ = Synth::squareWave(waveParams[j], period);
-      }
-
-      waveParams[j] = (double) ( ( (unsigned int) waveParams[j] + 1) % period );
-    }
-  } 
-
-  return 0;
-
-}
-
 Synth::Synth() {
 
   // Set all my private params to things that make sense
   data = (double *) calloc( this->channels*2+1, sizeof(double) ); 
+
+  this -> channels = 2;
 
   // Set a starting frequency for fun
   this->data[2] = 20;
@@ -87,8 +85,6 @@ Synth::Synth() {
 
   // For debug
   this->dac.showWarnings( true );
-  
-  std::cout << "channels: " << channels;
 }
 
 // What should happen whern I die?
@@ -118,8 +114,8 @@ void Synth::start() {
 
 
   try {
-    dac.openStream( &oParams, NULL, FORMAT, this->fs, &bufferFrames, (RtAudioCallback) &Synth::callback, 
-                    (void *)this->data, &options, (RtAudioErrorCallback) &Synth::errorCallback );
+    dac.openStream( &oParams, NULL, FORMAT, this->fs, &bufferFrames, &callback, 
+                    (void *)this->data, &options, (RtAudioErrorCallback) &errorCallback );
     dac.startStream();
   } catch ( RtAudioError& e ) {
     e.printMessage();
@@ -130,8 +126,8 @@ void Synth::start() {
 }
 
 void Synth::setAudio( double freq, unsigned int waveForm ) {
-  this->data[0] = freq;
-  this->data[1] = freq;
+  this->data[2] = freq;
+  this->data[3] = freq;
   this->data[4] = waveForm;
 }
 
@@ -140,4 +136,8 @@ int Synth::cleanup() {
   free( data );
 
   return 0;
+}
+
+int Synth::sampFreq() {
+  return fs;
 }
