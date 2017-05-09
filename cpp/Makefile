@@ -3,15 +3,15 @@ CFLAGS=-c -Wall
 
 all: main 
 
-main: synth.o main.o
-	$(CC) synth.o main.o -lrtaudio -o synth 
+main: ./synth/synth.o main.o
+	$(CC) synth/synth.o main.o -lrtaudio -o photo 
 
 main.o: main.cpp 
 	$(CC) $(CFLAGS) main.cpp
 
-synth.o: synth.cpp
-	$(CC) $(CFLAGS) synth.cpp -lrtaudio
+synth.o: ./synth/synth.cpp
+	$(CC) $(CFLAGS) ./synth/synth.cpp -lrtaudio
 
 clean: 
-	rm -f *o synth
+	rm -f *o synth/*o photo 
 

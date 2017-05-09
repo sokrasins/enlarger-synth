@@ -1,4 +1,4 @@
-#include "synth.h"
+#include "synth/synth.h"
 
 int main( int argc, char *argv[] )
 {
@@ -10,20 +10,21 @@ int main( int argc, char *argv[] )
   synth.start();
 
   while (true) {
+
+    // Modify sample from Synth class object
+    synth.setAudio( (double) freq, wave ); 
    
     // Play with random frequency variation
-    /* data[2] = 200 + rand() % 20; */
-    /* data[3] = data[2]; */
+    freq = 200 + rand() % 20;
 
     // Play a chirp over all waveforms
-    synth.setAudio( (double) freq, wave ); 
-    freq = (freq+1) % 1000;
-    if (freq < 20) {
-      freq=20;
-      wave = (wave+1) % 3; 
-    }
+    /* freq = (freq+1) % 1000; */
+    /* if (freq < 20) { */
+    /*   freq=20; */
+    /*   wave = (wave+1) % 3; */ 
+    /* } */
     // std::cout << "Playing freq: " << freq << " Hz\n";
-    SLEEP( 1 );
+    SLEEP( 10 );
   }
 
   return 0;
